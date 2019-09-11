@@ -13,8 +13,8 @@ class Backyard {
         game.tileSize * 9, game.tileSize * 23);
   }
 
-  void render(Canvas c) {
-    bgSprite.renderRect(c, bgRect);
+  void render(Canvas canvas) {
+    bgSprite.renderRect(canvas, bgRect);
   }
 
   void update(double t) {}
