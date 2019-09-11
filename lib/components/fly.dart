@@ -30,6 +30,11 @@ class Fly {
     }
     if (flyRect.top > game.screenSize.height) {
       isOffScreen = true;
+    } else {
+      flyingSpriteIndex += 30 * t;
+      if (flyingSpriteIndex >= 2) {
+        flyingSpriteIndex -= 2;
+      }
     }
   }
 
