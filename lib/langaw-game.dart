@@ -5,7 +5,7 @@ import 'package:flame/flame.dart';
 import 'package:flutter/gestures.dart';
 
 import 'package:mobile_gameflutterflame/components/fly.dart';
-import 'package:mobile_gameflutterflame/components/bayard.dart';
+import 'package:mobile_gameflutterflame/components/backyard.dart';
 import 'package:mobile_gameflutterflame/components/house-fly.dart';
 import 'package:mobile_gameflutterflame/components/drooler-fly.dart';
 import 'package:mobile_gameflutterflame/components/agile-fly.dart';
@@ -33,8 +33,8 @@ class LangawGame extends Game {
   }
 
   void spawnFly() {
-    double x = rnd.nextDouble() * (screenSize.width - tileSize);
-    double y = rnd.nextDouble() * (screenSize.height - tileSize);
+    double x = rnd.nextDouble() * (screenSize.width - tileSize * 2.025);
+    double y = rnd.nextDouble() * (screenSize.height - tileSize * 2.025);
     switch (rnd.nextInt(5)) {
       case 0:
         flies.add(HouseFly(this, x, y));
