@@ -11,6 +11,10 @@ import 'package:mobile_gameflutterflame/components/drooler-fly.dart';
 import 'package:mobile_gameflutterflame/components/agile-fly.dart';
 import 'package:mobile_gameflutterflame/components/hungry-fly.dart';
 import 'package:mobile_gameflutterflame/components/macho-fly.dart';
+import 'package:mobile_gameflutterflame/components/start-button.dart';
+
+import 'package:mobile_gameflutterflame/view.dart';
+import 'package:mobile_gameflutterflame/views/home-view.dart';
 
 class LangawGame extends Game {
   Size screenSize;
@@ -18,6 +22,10 @@ class LangawGame extends Game {
   Backyard background;
   List<Fly> flies;
   Random rnd;
+
+  View activeView = View.home;
+  HomeView homeView;
+  StartButton startButton;
 
   LangawGame() {
     initialize();
@@ -29,6 +37,8 @@ class LangawGame extends Game {
     resize(await Flame.util.initialDimensions());
 
     background = Backyard(this);
+    homeView = HomeView(this);
+    startButton = StartButton(this);
     spawnFly();
   }
 
@@ -58,6 +68,10 @@ class LangawGame extends Game {
     background.render(canvas);
 
     flies.forEach((Fly fly) => fly.render(canvas));
+    if (activeView == View.home) homeView.render(canvas);
+    if (activeView == View.home || activeView == View.lost) {
+      startButton.render(canvas);
+    }
   }
 
   void update(double t) {
@@ -71,10 +85,22 @@ class LangawGame extends Game {
   }
 
   void onTapDown(TapDownDetails d) {
-    flies.forEach((Fly fly) {
-      if (fly.flyRect.contains(d.globalPosition)) {
-        fly.onTapDown();
+    bool isHandled = false;
+
+    if (!isHandled && startButton.rect.contains(d.globalPosition)) {
+      if (activeView == View.home || activeView == View.lost) {
+        startButton.onTapDown();
+        isHandled = true;
       }
-    });
+    }
+
+    if (!isHandled) {
+      flies.forEach((Fly fly) {
+        if (fly.flyRect.contains(d.globalPosition)) {
+          fly.onTapDown();
+          isHandled = true;
+        }
+      });
+    }
   }
 }
