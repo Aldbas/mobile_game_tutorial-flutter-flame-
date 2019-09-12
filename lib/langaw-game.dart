@@ -16,6 +16,7 @@ import 'package:mobile_gameflutterflame/components/start-button.dart';
 import 'package:mobile_gameflutterflame/view.dart';
 import 'package:mobile_gameflutterflame/views/home-view.dart';
 import 'package:mobile_gameflutterflame/views/lost-view.dart';
+import 'package:mobile_gameflutterflame/controllers/spawner.dart';
 
 class LangawGame extends Game {
   Size screenSize;
@@ -23,6 +24,7 @@ class LangawGame extends Game {
   Backyard background;
   List<Fly> flies;
   StartButton startButton;
+  FlySpawner spawner;
   Random rnd;
 
   View activeView = View.home;
@@ -42,7 +44,7 @@ class LangawGame extends Game {
     startButton = StartButton(this);
     homeView = HomeView(this);
     lostView = LostView(this);
-    spawnFly();
+    spawner = FlySpawner(this);
   }
 
   void spawnFly() {
@@ -73,7 +75,6 @@ class LangawGame extends Game {
     flies.forEach((Fly fly) => fly.render(canvas));
     if (activeView == View.home) homeView.render(canvas);
     if (activeView == View.lost) lostView.render(canvas);
-
     if (activeView == View.home || activeView == View.lost) {
       startButton.render(canvas);
     }
@@ -82,6 +83,7 @@ class LangawGame extends Game {
   void update(double t) {
     flies.forEach((Fly fly) => fly.update(t));
     flies.removeWhere((Fly fly) => fly.isOffScreen);
+    spawner.update(t);
   }
 
   void resize(Size size) {
