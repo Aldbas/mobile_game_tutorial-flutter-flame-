@@ -15,17 +15,19 @@ import 'package:mobile_gameflutterflame/components/start-button.dart';
 
 import 'package:mobile_gameflutterflame/view.dart';
 import 'package:mobile_gameflutterflame/views/home-view.dart';
+import 'package:mobile_gameflutterflame/views/lost-view.dart';
 
 class LangawGame extends Game {
   Size screenSize;
   double tileSize;
   Backyard background;
   List<Fly> flies;
+  StartButton startButton;
   Random rnd;
 
   View activeView = View.home;
   HomeView homeView;
-  StartButton startButton;
+  LostView lostView;
 
   LangawGame() {
     initialize();
@@ -37,8 +39,9 @@ class LangawGame extends Game {
     resize(await Flame.util.initialDimensions());
 
     background = Backyard(this);
-    homeView = HomeView(this);
     startButton = StartButton(this);
+    homeView = HomeView(this);
+    lostView = LostView(this);
     spawnFly();
   }
 
@@ -69,6 +72,8 @@ class LangawGame extends Game {
 
     flies.forEach((Fly fly) => fly.render(canvas));
     if (activeView == View.home) homeView.render(canvas);
+    if (activeView == View.lost) lostView.render(canvas);
+
     if (activeView == View.home || activeView == View.lost) {
       startButton.render(canvas);
     }
@@ -86,6 +91,7 @@ class LangawGame extends Game {
 
   void onTapDown(TapDownDetails d) {
     bool isHandled = false;
+    bool didHitAFly = false;
 
     if (!isHandled && startButton.rect.contains(d.globalPosition)) {
       if (activeView == View.home || activeView == View.lost) {
@@ -99,8 +105,12 @@ class LangawGame extends Game {
         if (fly.flyRect.contains(d.globalPosition)) {
           fly.onTapDown();
           isHandled = true;
+          didHitAFly = true;
         }
       });
+      if (activeView == View.playing && !didHitAFly) {
+        activeView = View.lost;
+      }
     }
   }
 }
