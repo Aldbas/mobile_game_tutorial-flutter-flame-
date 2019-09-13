@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flame/game.dart';
 import 'package:flame/flame.dart';
 import 'package:flutter/gestures.dart';
@@ -14,6 +16,10 @@ import 'package:mobile_gameflutterflame/components/macho-fly.dart';
 import 'package:mobile_gameflutterflame/components/start-button.dart';
 import 'package:mobile_gameflutterflame/components/help-button.dart';
 import 'package:mobile_gameflutterflame/components/credits-button.dart';
+import 'package:mobile_gameflutterflame/components/score-display.dart';
+import 'package:mobile_gameflutterflame/components/highscore-display.dart';
+import 'package:mobile_gameflutterflame/components/music-button.dart';
+import 'package:mobile_gameflutterflame/components/sound-control.dart';
 
 import 'package:mobile_gameflutterflame/view.dart';
 import 'package:mobile_gameflutterflame/views/home-view.dart';
@@ -34,12 +40,20 @@ class LangawGame extends Game {
   CreditsButton creditsButton;
   FlySpawner spawner;
   Random rnd;
+  int score;
+  ScoreDisplay scoreDisplay;
+  HighScoreDisplay highScoreDisplay;
+  final SharedPreferences storage;
+  AudioPlayer homeBGM;
+  AudioPlayer playingBGM;
+  MusicButton musicButton;
+  SoundButton soundButton;
 
   View activeView = View.home;
   HomeView homeView;
   LostView lostView;
 
-  LangawGame() {
+  LangawGame(this.storage) {
     initialize();
   }
 
@@ -57,6 +71,25 @@ class LangawGame extends Game {
     helpView = HelpView(this);
     creditsView = CreditsView(this);
     spawner = FlySpawner(this);
+    scoreDisplay = ScoreDisplay(this);
+    highScoreDisplay = HighScoreDisplay(this);
+    musicButton = MusicButton(this);
+    soundButton = SoundButton(this);
+    homeBGM = await Flame.audio.loop('bgm/home.mp3', volume: .25);
+
+    playingBGM = await Flame.audio.loop('bgm/playing.mp3', volume: .25);
+
+    playHomeBGM();
+
+    score = 0;
+  }
+
+  void playHomeBGM() {
+    homeBGM.resume();
+  }
+
+  void playPlayingBGM() {
+    playingBGM.resume();
   }
 
   void spawnFly() {
@@ -83,6 +116,9 @@ class LangawGame extends Game {
 
   void render(Canvas canvas) {
     background.render(canvas);
+    highScoreDisplay.render(canvas);
+    musicButton.render(canvas);
+    soundButton.render(canvas);
 
     flies.forEach((Fly fly) => fly.render(canvas));
     if (activeView == View.home) homeView.render(canvas);
@@ -95,12 +131,14 @@ class LangawGame extends Game {
     }
     if (activeView == View.help) helpView.render(canvas);
     if (activeView == View.credits) creditsView.render(canvas);
+    if (activeView == View.playing) scoreDisplay.render(canvas);
   }
 
   void update(double t) {
     flies.forEach((Fly fly) => fly.update(t));
     flies.removeWhere((Fly fly) => fly.isOffScreen);
     spawner.update(t);
+    if (activeView == View.playing) scoreDisplay.update(t);
   }
 
   void resize(Size size) {
@@ -117,6 +155,17 @@ class LangawGame extends Game {
         activeView = View.home;
         isHandled = true;
       }
+    }
+    // music button
+    if (!isHandled && musicButton.rect.contains(d.globalPosition)) {
+      musicButton.onTapDown();
+      isHandled = true;
+    }
+
+// sound button
+    if (!isHandled && soundButton.rect.contains(d.globalPosition)) {
+      soundButton.onTapDown();
+      isHandled = true;
     }
     // credits button
     if (!isHandled && startButton.rect.contains(d.globalPosition)) {
@@ -141,6 +190,7 @@ class LangawGame extends Game {
         }
       });
       if (activeView == View.playing && !didHitAFly) {
+        Flame.audio.play('sfx/haha' + (rnd.nextInt(5) + 1).toString() + '.ogg');
         activeView = View.lost;
       }
     }
@@ -150,6 +200,9 @@ class LangawGame extends Game {
         helpButton.onTapDown();
         isHandled = true;
       }
+    }
+    if (soundButton.isEnabled) {
+      Flame.audio.play('sfx/haha' + (rnd.nextInt(5) + 1).toString() + '.ogg');
     }
 
     // credits button
